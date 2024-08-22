@@ -1,21 +1,21 @@
 <?php
-// Function to generate a unique short URL code
+
 function generateShortURL($url) {
     return substr(md5($url . time()), 0, 6);
 }
 
-// Handling URL shortening
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $original_url = filter_var($_POST['url'], FILTER_SANITIZE_URL);
 
-    // Validate the URL
+    
     if (filter_var($original_url, FILTER_VALIDATE_URL)) {
         $short_code = generateShortURL($original_url);
 
-        // Store the short code and original URL
+        
         file_put_contents('urls.txt', "$short_code $original_url\n", FILE_APPEND);
 
-        // Return the shortened URL
+      
         $short_url = "http://localhost/url-shortener/$short_code";
         echo json_encode(["short_url" => $short_url]);
     } else {
@@ -24,31 +24,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     exit;
 }
 
-// Handling redirection when accessing the shortened URL
 if (isset($_GET['code'])) {
     $short_code = $_GET['code'];
 
-    // Open the file and read each line
+    
     $lines = file('urls.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
     foreach ($lines as $line) {
         list($code, $url) = explode(' ', $line, 2);
 
-        // Check if the code matches the requested code
+        
         if ($code === $short_code) {
-            // Redirect to the original URL
+            
             header("Location: $url");
             exit;
         }
     }
 
-    // If code is not found, show an error message
+    
     header("HTTP/1.0 404 Not Found");
     echo "URL not found! Please check the short code.";
     exit;
 }
 
-// Display a message if no code is provided
+
 echo "No short code provided!";
 ?>
 
